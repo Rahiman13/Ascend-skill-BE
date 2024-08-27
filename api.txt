@@ -1,0 +1,108 @@
+User:
+Register = http://localhost:5000/api/users/register
+Login = http://localhost:5000/api/users/login
+Create = http://localhost:5000/api/users/
+get = http://localhost:5000/api/users/
+getById = http://localhost:5000/api/users/:id
+delete = http://localhost:5000/api/users/:id
+update = http://localhost:5000/api/users/:id
+
+Courses
+Create = http://localhost:5000/api/courses/
+get = http://localhost:5000/api/courses/
+getById = http://localhost:5000/api/courses/:id
+delete = http://localhost:5000/api/courses/:id
+update = http://localhost:5000/api/courses/:id
+count = http://localhost:5000/api/courses/count
+
+Review
+Create = http://localhost:5000/api/reviews/
+get = http://localhost:5000/api/reviews/
+getById = http://localhost:5000/api/reviews/:id
+delete = http://localhost:5000/api/reviews/:id
+update = http://localhost:5000/api/reviews/:id
+count = http://localhost:5000/api/reviews/count
+
+Team
+Create = http://localhost:5000/api/team/
+get = http://localhost:5000/api/team/
+getById = http://localhost:5000/api/team/:id
+delete = http://localhost:5000/api/team/:id
+update = http://localhost:5000/api/team/:id
+count = http://localhost:5000/api/team/count
+
+Video Review
+Create = http://localhost:5000/api/video-reviews/
+get = http://localhost:5000/api/video-reviews/
+getById = http://localhost:5000/api/video-reviews/:id
+delete = http://localhost:5000/api/video-reviews/:id
+update = http://localhost:5000/api/video-reviews/:id
+count = http://localhost:5000/api/video-rev iews/count
+
+PHD Holders
+Create = http://localhost:5000/api/phd-holders/
+get = http://localhost:5000/api/phd-holders/
+getById = http://localhost:5000/api/phd-holders/:id
+delete = http://localhost:5000/api/phd-holders/:id
+update = http://localhost:5000/api/phd-holders/:id
+count = http://localhost:5000/api/phd-holders/count
+
+
+College
+Create = http://localhost:5000/api/colleges/
+get = http://localhost:5000/api/colleges/
+getById = http://localhost:5000/api/colleges/:id
+delete = http://localhost:5000/api/colleges/:id
+update = http://localhost:5000/api/colleges/:id
+count = http://localhost:5000/api/colleges/count
+
+
+Companies
+Create = http://localhost:5000/api/companies/
+get = http://localhost:5000/api/companies/
+getById = http://localhost:5000/api/companies/:id
+delete = http://localhost:5000/api/companies/:id
+update = http://localhost:5000/api/companies/:id
+count = http://localhost:5000/api/companies/count
+
+
+Contacts
+Create = http://localhost:5000/api/contacts/
+get = http://localhost:5000/api/contacts/
+getById = http://localhost:5000/api/contacts/:id
+delete = http://localhost:5000/api/contacts/:id
+update = http://localhost:5000/api/contacts/:id
+count = http://localhost:5000/api/contacts/count
+
+authors
+Create = http://localhost:5000/api/authors/
+get = http://localhost:5000/api/authors/
+getById = http://localhost:5000/api/authors/:id
+delete = http://localhost:5000/api/authors/:id
+update = http://localhost:5000/api/authors/:id
+count = http://localhost:5000/api/authors/count
+
+placements
+Create = http://localhost:5000/api/placements/
+get = http://localhost:5000/api/placements/
+getById = http://localhost:5000/api/placements/:id
+delete = http://localhost:5000/api/placements/:id
+update = http://localhost:5000/api/placements/:id
+count = http://localhost:5000/api/placements/count
+
+Internships
+Create = http://localhost:5000/api/internships/
+get = http://localhost:5000/api/internships/
+getById = http://localhost:5000/api/internships/:id
+delete = http://localhost:5000/api/internships/:id
+update = http://localhost:5000/api/internships/:id
+count = http://localhost:5000/api/internships/count
+
+
+Roadmaps
+Create = http://localhost:5000/api/roadmaps/
+get = http://localhost:5000/api/roadmaps/
+getById = http://localhost:5000/api/roadmaps/:id
+delete = http://localhost:5000/api/roadmaps/:id
+update = http://localhost:5000/api/roadmaps/:id
+count = http://localhost:5000/api/roadmaps/count

@@ -1,0 +1,97 @@
+//////////////////////////////////////////////////////////////////////////
+course model : Completed
+add author image
+add the curriculum as an array
+add categories
+write categories fetching list api and categories api
+total courses api
+add link to the course model - view in class plus
+updated image to multer
+total courses count
+////////////////////////////////Completed/////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+phd holder :
+add image in the phd holder
+total phd holders apis
+////////////////////////////////Completed/////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+reviewmodel:
+add image 
+////////////////////////////////Completed/////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+teammembers :
+add image
+total team members api
+add degree schema --> degree Name, institution, year
+
+const jwt = require('jsonwebtoken');
+const User = require('../models/userModel');
+
+const protect = async (req, res, next) => {
+  let token;
+
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select('-password');
+      next();
+    } catch (error) {
+      res.status(401).json({ message: 'Not authorized, token failed' });
+    }
+  } else {
+    res.status(401).json({ message: 'Not authorized, no token' });
+  }
+};
+
+const admin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(401).json({ message: 'Not authorized as an admin' });
+  }
+};
+
+module.exports = { protect, admin };
+////////////////////////////////Completed/////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+college and company:
+add college and company models and apis
+feilds:
+name, logo, location, description 
+total colleges and companys api
+////////////////////////////////Completed/////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+contact:
+create contact model
+create apis to take input data and send it to admins mail
+fields: Name, mail, Reason, description 
+////////////////////////////////Completed/////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+author:
+create author model
+feilds:name, course, Degree, passedoutyear, bio, image, experience, University, author reiews
+
+//////////////////////////////////////////////////////////////////////////
+internships:
+create internship model
+fields: course title, duration, instructor, starting date, ending date, syllabus, instructor image, instructor qualification, instructor bio
+////////////////////////////////Completed/////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+placements:
+create placement module
+fields: studentname, position, companyName, studentImage, description, studentCollege, placedYear
+////////////////////////////////Completed/////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+roadmap:
+create a roadmap model for course
+fileds: courseId,
+////////////////////////////////Completed/////////////////////////////////
