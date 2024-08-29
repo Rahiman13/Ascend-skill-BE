@@ -10,18 +10,19 @@ const courseSchema = new mongoose.Schema({
   duration: {
     type: Number,
   },
-  authorName: {
+  author: {
     type: String,
   },
   authorImage: {
     type: String,
+     required: false,
   },
   authorId:{
     type: mongoose.Schema.Types.ObjectId,
   },
-  // price: {
-  //   type: Number,
-  // },
+  price: {
+    type: Number,
+  },
   image: {
     type: String,
     required: false,
@@ -33,11 +34,11 @@ const courseSchema = new mongoose.Schema({
     type: Map,
     of: [String],
   },
-  pricing:{
-   type:String,
+  pricing: {
+    type: String,
   },
-  vedio:{
-    type:String,
+  vedio: {
+    type: String,
   },
   reviews: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -45,7 +46,7 @@ const courseSchema = new mongoose.Schema({
   }],
   courseRating: {
     type: String,
-    required: true,
+    // required: true,
   },
 }, {
   timestamps: true,

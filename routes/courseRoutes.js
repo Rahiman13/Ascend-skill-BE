@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 const {
   getCourses,
   getCourseById,
@@ -6,29 +7,32 @@ const {
   updateCourse,
   deleteCourse,
   getCourseCount,
-  getCourseDetails,
-} = require('../controllers/courseController');
-const multer = require('multer');
-const path = require('path');
+} = require('../controllers/courseController'); // Make sure this path is correct
+
 const router = express.Router();
 
+// Multer setup for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+    cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
-
 const upload = multer({ storage });
 
-router.get('/', getCourses);
-router.get('/count', getCourseCount); // Add this line
-router.get('/:id', getCourseById);
-router.get('/details/:id', getCourseDetails); // Add this line for detailed course info
-router.post('/', upload.fields([{ name: 'authorImage' }, { name: 'image' }]), createCourse);
-router.put('/:id', upload.fields([{ name: 'authorImage' }, { name: 'image' }]), updateCourse);
-router.delete('/:id', deleteCourse);
+// Routes
+router.route('/')
+  .get(getCourses)  // This should be correctly imported and defined in the controller
+  .post(upload.single('image'), createCourse);
+
+router.route('/count')
+  .get(getCourseCount); // Same here
+
+router.route('/:id')
+  .get(getCourseById)  // And here
+  .put(upload.single('image'), updateCourse)
+  .delete(deleteCourse);
 
 module.exports = router;

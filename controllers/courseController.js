@@ -1,39 +1,21 @@
-const mongoose = require('mongoose');
-const Course = require('../models/courseModel');
-const Review = require('../models/reviewModel');
-const VideoReview = require('../models/videoReviewModel');
-const Author = require('../models/authorModel');
-const Roadmap = require('../models/roadmapModel');
-const fs = require('fs');
-const path = require('path');
 const cloudinary = require('cloudinary').v2;
-const multer = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const Course = require('../models/courseModel');
+const Author = require('../models/authorModel');  // Assuming you have an Author model
+const Review = require('../models/reviewModel');  // Assuming you have a Review model
 
 // Cloudinary configuration
 cloudinary.config({
-  cloud_name: 'dpy3mjhw5',
-  api_key: '614557284489134',
-  api_secret: 'lzlAhhjN7B6VkJEeZwo1M7sBD3k',
+  cloud_name: 'dmst4lbrx',
+  api_key: '828194579658255',
+  api_secret: '4hij7lz9E3GNXkFgGW6XnvJ1DFo',
 });
-
-// Set up Cloudinary storage
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'course_images',
-    allowed_formats: ['jpg', 'png', 'jpeg'],
-  },
-});
-
-const upload = multer({ storage });
 
 // @desc    Get all courses
 // @route   GET /api/courses
 // @access  Public
 const getCourses = async (req, res) => {
   try {
-    const courses = await Course.find();
+    const courses = await Course.find().populate('authorId reviews');
     res.json(courses);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -45,7 +27,7 @@ const getCourses = async (req, res) => {
 // @access  Public
 const getCourseById = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
+    const course = await Course.findById(req.params.id).populate('authorId reviews');
     if (course) {
       res.json(course);
     } else {
@@ -60,7 +42,71 @@ const getCourseById = async (req, res) => {
 // @route   POST /api/courses
 // @access  Public
 const createCourse = async (req, res) => {
-  const { title, description, duration, authorName, authorId, category, curriculum, pricing, vedio, courseRating } = req.body;
+  const { title, description, duration, authorId, price, category, curriculum, pricing, vedio, reviews, courseRating } = req.body;
+
+  let parsedCurriculum;
+  try {
+    parsedCurriculum = typeof curriculum === 'string' ? JSON.parse(curriculum) : curriculum;
+  } catch (error) {
+    return res.status(400).json({ message: 'Curriculum must be a valid JSON object' });
+  }
+
+  let parsedReviews;
+  try {
+    parsedReviews = Array.isArray(reviews) ? reviews.map(review => mongoose.Types.ObjectId(review)) : [];
+  } catch (error) {
+    return res.status(400).json({ message: 'Reviews must be an array of valid ObjectId strings' });
+  }
+
+  let imageUrl = '';
+  if (req.file) {
+    try {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'course_images',
+      });
+      imageUrl = result.secure_url;
+    } catch (error) {
+      return res.status(500).json({ message: 'Image upload failed', error: error.message });
+    }
+  }
+
+  try {
+    const author = await Author.findById(authorId);
+    if (!author) {
+      return res.status(404).json({ message: 'Author not found' });
+    }
+
+    const course = new Course({
+      title,
+      description,
+      duration,
+      author: author.name,
+      authorImage: author.image,
+      authorId,
+      price,
+      image: imageUrl,
+      category,
+      curriculum: parsedCurriculum,
+      pricing,
+      vedio,
+      reviews: parsedReviews,
+      courseRating,
+    });
+
+    const newCourse = await course.save();
+    res.status(201).json(newCourse);
+  } catch (error) {
+    console.error('Error creating course:', error); // Log error for debugging
+    res.status(400).json({ message: error.message });
+  }
+};
+
+
+// @desc    Update a course
+// @route   PUT /api/courses/:id
+// @access  Public
+const updateCourse = async (req, res) => {
+  const { title, description, duration, authorId, price, category, curriculum, pricing, vedio, reviews, courseRating } = req.body;
 
   let parsedCurriculum;
   try {
@@ -70,119 +116,54 @@ const createCourse = async (req, res) => {
   }
 
   try {
-    // Check if multer processed any files
-    if (!req.files) {
-      return res.status(400).json({ message: 'No files were uploaded.' });
-    }
-
-    const authorImageFile = req.files['authorImage'] ? req.files['authorImage'][0] : null;
-    const imageFile = req.files['image'] ? req.files['image'][0] : null;
-
-    // Upload images to Cloudinary if they exist
-    let authorImageUpload, imageUpload;
-    if (authorImageFile) {
-      authorImageUpload = await cloudinary.uploader.upload(authorImageFile.path, {
-        folder: 'course_images',
-      });
-    }
-    if (imageFile) {
-      imageUpload = await cloudinary.uploader.upload(imageFile.path, {
-        folder: 'course_images',
-      });
-    }
-
-    const course = new Course({
-      title,
-      description,
-      duration,
-      authorName,
-      authorId: mongoose.Types.ObjectId(authorId), // Ensure the authorId is stored as an ObjectId
-      authorImage: authorImageUpload ? authorImageUpload.secure_url : '',
-      image: imageUpload ? imageUpload.secure_url : '',
-      // price,
-      category,
-      pricing,
-      curriculum: parsedCurriculum,
-      vedio,
-      courseRating,
-    });
-
-    const newCourse = await course.save();
-    res.status(201).json(newCourse);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-
-
-// @desc    Update a course
-// @route   PUT /api/courses/:id
-// @access  Public
-const updateCourse = async (req, res) => {
-  const { title, description, duration, authorName, authorId, category, curriculum, pricing, vedio, courseRating } = req.body;
-
-  try {
     const course = await Course.findById(req.params.id);
 
-    if (course) {
-      course.title = title || course.title;
-      course.description = description || course.description;
-      course.duration = duration || course.duration;
-      course.authorName = authorName || course.authorName;
-      course.authorId = mongoose.Types.ObjectId(authorId) || course.authorId;
-      // course.price = price || course.price;
-      course.category = category || course.category;
-      course.pricing = pricing || course.pricing;
-      course.vedio = vedio || course.vedio;
-      course.courseRating = courseRating || course.courseRating;
-
-      let parsedCurriculum;
-      try {
-        parsedCurriculum = typeof curriculum === 'string' ? JSON.parse(curriculum) : curriculum;
-      } catch (error) {
-        return res.status(400).json({ message: 'Curriculum must be a valid JSON object' });
-      }
-
-      course.curriculum = parsedCurriculum || course.curriculum;
-
-      // Update author image if provided
-      if (req.files && req.files['authorImage']) {
-        // Delete old image from Cloudinary if it exists
-        if (course.authorImage) {
-          const public_id = course.authorImage.split('/').pop().split('.')[0]; // Extract the public_id
-          await cloudinary.uploader.destroy(`course_images/${public_id}`);
-        }
-
-        // Upload new image to Cloudinary
-        const authorImageUpload = await cloudinary.uploader.upload(req.files['authorImage'][0].path, {
-          folder: 'course_images',
-        });
-
-        course.authorImage = authorImageUpload.secure_url;
-      }
-
-      // Update course image if provided
-      if (req.files && req.files['image']) {
-        // Delete old image from Cloudinary if it exists
-        if (course.image) {
-          const public_id = course.image.split('/').pop().split('.')[0]; // Extract the public_id
-          await cloudinary.uploader.destroy(`course_images/${public_id}`);
-        }
-
-        // Upload new image to Cloudinary
-        const imageUpload = await cloudinary.uploader.upload(req.files['image'][0].path, {
-          folder: 'course_images',
-        });
-
-        course.image = imageUpload.secure_url;
-      }
-
-      const updatedCourse = await course.save();
-      res.json(updatedCourse);
-    } else {
-      res.status(404).json({ message: 'Course not found' });
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
     }
+
+    // Handle image upload if a file is provided
+    if (req.file) {
+      // Delete the existing image if present
+      if (course.image) {
+        const publicId = course.image.split('/').pop().split('.')[0]; // Extract public ID from URL
+        await cloudinary.uploader.destroy(`course_images/${publicId}`);
+      }
+
+      // Upload the new image
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'course_images',
+        });
+        course.image = result.secure_url;
+      } catch (error) {
+        return res.status(500).json({ message: 'Image upload failed', error: error.message });
+      }
+    }
+
+    const author = await Author.findById(authorId);
+    if (!author) {
+      return res.status(404).json({ message: 'Author not found' });
+    }
+
+    // Update the course fields
+    course.title = title || course.title;
+    course.description = description || course.description;
+    course.duration = duration || course.duration;
+    course.author = author.name || course.author;
+    course.authorImage = author.image || course.authorImage;
+    course.authorId = authorId || course.authorId;
+    course.price = price || course.price;
+    course.category = category || course.category;
+    course.curriculum = parsedCurriculum || course.curriculum;
+    course.pricing = pricing || course.pricing;
+    course.vedio = vedio || course.vedio;
+    course.reviews = reviews || course.reviews;
+    course.courseRating = courseRating || course.courseRating;
+
+    // Save the updated course
+    const updatedCourse = await course.save();
+    res.json(updatedCourse);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -196,36 +177,30 @@ const deleteCourse = async (req, res) => {
     const course = await Course.findById(req.params.id);
 
     if (course) {
-      // If the course images exist, delete them from Cloudinary
-      if (course.authorImage) {
-        try {
-          const public_id = course.authorImage.split('/').pop().split('.')[0]; // Extract the public_id
-          await cloudinary.uploader.destroy(`course_images/${public_id}`);
-        } catch (error) {
-          console.error('Error deleting author image from Cloudinary:', error.message);
-        }
-      }
-
+      // Delete image from Cloudinary if it exists
       if (course.image) {
-        try {
-          const public_id = course.image.split('/').pop().split('.')[0]; // Extract the public_id
-          await cloudinary.uploader.destroy(`course_images/${public_id}`);
-        } catch (error) {
-          console.error('Error deleting course image from Cloudinary:', error.message);
-        }
+        const publicId = course.image.split('/').pop().split('.')[0]; // Extract public ID from URL
+        console.log('Deleting Cloudinary image with public ID:', publicId);
+        await cloudinary.uploader.destroy(`course_images/${publicId}`);
       }
 
-      // Delete the course from the database
-      await Course.deleteOne({ _id: req.params.id });
-
-      res.json({ message: 'Course removed' });
+      const result = await Course.deleteOne({ _id: req.params.id });
+      console.log('Delete result:', result);
+      
+      if (result.deletedCount === 1) {
+        res.json({ message: 'Course removed' });
+      } else {
+        res.status(404).json({ message: 'Course not found' });
+      }
     } else {
       res.status(404).json({ message: 'Course not found' });
     }
   } catch (error) {
+    console.error('Error deleting course:', error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // @desc    Get total count of courses
 // @route   GET /api/courses/count
@@ -239,34 +214,6 @@ const getCourseCount = async (req, res) => {
   }
 };
 
-// @desc    Get course details with reviews, instructor, roadmap, and video reviews
-// @route   GET /api/courses/:id/details
-// @access  Public
-const getCourseDetails = async (req, res) => {
-  try {
-    const courseId = req.params.id;
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
-    }
-
-    const reviews = await Review.find({ courseId }).populate('userId', 'username');
-    const videoReviews = await VideoReview.find({ courseId }).populate('userId', 'username');
-    const authorName = await Author.findOne({ _id: course.authorId });
-    const roadmap = await Roadmap.findOne({ courseId });
-
-    res.json({
-      course,
-      reviews,
-      videoReviews,
-      authorName,
-      roadmap,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 module.exports = {
   getCourses,
   getCourseById,
@@ -274,5 +221,4 @@ module.exports = {
   updateCourse,
   deleteCourse,
   getCourseCount,
-  getCourseDetails,
 };
