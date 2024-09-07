@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.route('/')
   .get(getReviews)
-  .post(protect, createReview);
+  .post( createReview);
 
 router.route('/count')
   .get(getReviewCount);

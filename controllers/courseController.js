@@ -214,6 +214,34 @@ const getCourseCount = async (req, res) => {
   }
 };
 
+
+// Get author details
+// Get course details with reviews, instructor, roadmap, and video reviews
+const getCourseDetails = async (req, res) => {
+  try {
+    const courseId = req.params.id;
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    const reviews = await Review.find({ courseId }).populate('userId', 'username');
+    // const vedio = await VideoReview.find({ courseId }).populate('userId', 'username');
+    const author = await Author.findOne({ _id: course.authorId });
+    // const roadmap = await Roadmap.findOne({ courseId });
+
+    res.json({
+      course,
+      reviews,
+      // vedio,
+      author,
+      // roadmap,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getCourses,
   getCourseById,
@@ -221,4 +249,5 @@ module.exports = {
   updateCourse,
   deleteCourse,
   getCourseCount,
+  getCourseDetails,
 };

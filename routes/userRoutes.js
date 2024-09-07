@@ -36,10 +36,10 @@ router.post(
 );
 
 router.route('/profile').get(protect, getUserProfile);
-router.route('/').get(protect, getUsers);
+router.route('/').get(getUsers);
 router.route('/:id')
-  .get(protect, getUserById)
-  .put(protect, updateUser)
-  .delete(protect, deleteUser);
+  .get( getUserById)
+  .put( updateUser)
+  .delete( deleteUser);
 
 module.exports = router;

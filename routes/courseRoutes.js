@@ -7,6 +7,7 @@ const {
   updateCourse,
   deleteCourse,
   getCourseCount,
+  getCourseDetails,
 } = require('../controllers/courseController'); // Make sure this path is correct
 
 const router = express.Router();
@@ -31,7 +32,9 @@ router.route('/count')
   .get(getCourseCount); // Same here
 
 router.route('/:id')
-  .get(getCourseById)  // And here
+  // .get(getCourseById)  // And here
+  .get(getCourseDetails)  // And here
+
   .put(upload.single('image'), updateCourse)
   .delete(deleteCourse);
 
